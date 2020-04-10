@@ -1,0 +1,16 @@
+<apex:page cache="false">
+
+        <br />
+        <div style="margin:0 auto;width:1000px;">
+            <apex:outputText value="There is an error accessing the checkout site." rendered="{!$CurrentPage.parameters.id = null}" />
+            
+            <apex:outputPanel rendered="{!$CurrentPage.parameters.id != null}">
+                <apex:insert name="header" />
+                <br /><br />
+                
+                <apex:pageMessages />
+
+                <apex:insert name="body" />
+            </apex:outputPanel>
+        </div>
+</apex:page>

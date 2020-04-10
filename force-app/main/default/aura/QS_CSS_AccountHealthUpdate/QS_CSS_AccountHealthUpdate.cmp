@@ -1,0 +1,45 @@
+<aura:component controller="QS_CSS_AccountHealthController" implements="force:hasRecordId,force:lightningQuickAction" access="global" >
+    <aura:attribute name="Spinner" type="boolean" default="true"/>
+    <aura:attribute name="success" type="boolean" default="false"/>
+    <aura:attribute name="error" type="boolean" default="false"/>
+    <aura:attribute name="errorMessage" type="string"/>
+    <aura:attribute name="notPressed" type="boolean" default="true"/>
+    <aura:attribute name="recordId" type="Id" />
+    <br></br>
+    
+    <div>
+        <!--Display loading "spinner" while waiting for response from sending to PLA, once returned, display success message-->
+        <aura:if isTrue="{!v.notPressed}">
+            <h1>Selecting "Update Health" will create/update an account health record for the most recent month. The record will be named
+                as follows: "{Account Name}-Year-Month." </h1>
+            <div class="slds-p-vertical_large" >
+                <lightning:button onclick="{!c.update}" disabled="{!v.success}" class="slds-button slds-button_brand" label="Update Health"/>
+            </div>
+            <aura:set attribute="else">
+                <aura:if isTrue="{!v.Spinner}">
+                    <div class="slds-is-relative slds-p-vertical_xx-large" >
+                        <lightning:spinner variant="brand" alternativeText="Loading" size="medium" />
+                    </div>
+                    <div class="slds-p-top_small slds-align_absolute-center">
+                        <h1>Updating most recent Account Health Score</h1>
+                    </div>
+                    
+                    <aura:set attribute="else">
+                        <aura:if isTrue="{!v.success}">
+                            <h1>Success! Press the button to refresh page and see updates.</h1>
+                            <br></br>
+                            <lightning:button onclick="{!c.refresh}" class="slds-button slds-button_brand" label="Refresh"/>
+                        </aura:if>
+                        <aura:if isTrue="{!v.error}">
+                            <p>Error: </p>
+                            <aura:unescapedHtml value="{!v.errorMessage}"/>
+                            <!--<h1>Error. Press the button below to try again.</h1>
+                            <br></br>
+                            <lightning:button onclick="{!c.retry}" class="slds-button slds-button_brand" label="Update Health"/>-->
+                        </aura:if>
+                    </aura:set>
+                </aura:if>
+            </aura:set>
+        </aura:if>
+    </div>
+</aura:component>

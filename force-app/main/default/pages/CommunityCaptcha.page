@@ -1,0 +1,60 @@
+<apex:page showHeader="false" showQuickActionVfHeader="false" applyBodyTag="false" applyHtmlTag="false" showChat="false" controller="CommunityController">
+    <!--Load explicitly because of SF's Angular or React type of implementation which means 
+the view template of the application may not be loaded yet when the recaptcha is loaded. 
+-->
+    <html>
+        <head>            
+            <title>reCaptcha</title>
+            <script type="text/javascript">
+            var verifyCallback = function(response) 
+            {
+                //console.log(response);
+                Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.CommunityController.verifyCaptcha}',
+                    response, 
+                    function(result, event)
+                    {
+                        //console.log(JSON.stringify(result));
+                        //console.log(JSON.stringify(event));
+                        //let theDomain="https://eos1-mindbody.cs27.force.com/";            //Full Sandbox
+                        //let theDomain="https://mindbodysupport.force.com/";               //Prod
+                        let theDomain="https://eosdev-mindbodysupport.cs124.force.com/";    //EOS Dev
+                        if (event.status && result) 
+                        {
+                            parent.postMessage("Unlock",theDomain);                            
+                        } 
+                        else if (event.type === 'exception' || (event.status && !result)) 
+                        {
+                            parent.postMessage("Lock",theDomain);                            
+                            //console.log(event.message);
+                            //console.log(event.where);
+                        } 
+                        else 
+                        {
+                            parent.postMessage("Unlock",theDomain);                            
+                            //console.log(event.message);
+                        }
+                    }, 
+                    {escape: true}
+                );
+            };
+            var onloadCallback = function() {
+                grecaptcha.render('html_element', {
+                    'sitekey' : '6LdVxNUUAAAAAH0uNPJF6O5dHzxlwQWJHBzauvqD',
+                    'callback' : verifyCallback,
+                });
+            };
+            </script>
+        </head>
+        <body style="background: #fdfdfd;">
+            <form action="?" method="POST">
+                
+                <div id="html_element"></div>
+                <br />
+                <input type="submit" value="Submit" style="display:none;" />            
+            </form>
+            <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async="" defer="">
+            </script>
+        </body>
+    </html>
+</apex:page>

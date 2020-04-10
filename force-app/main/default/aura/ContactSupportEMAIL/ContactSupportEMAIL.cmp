@@ -1,0 +1,169 @@
+<aura:component implements="force:appHostable,forceCommunity:availableForAllPageTypes" 
+                controller="CommunityController" access="public" >
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <!-- COMPONENT DISPLAY VARIABLES -->
+    <aura:attribute name="showSpinner" type="Boolean" default="false" />
+    <aura:attribute name="showCase" type="Boolean" default="true" />
+    <aura:attribute name="showSubmitCase" type="Boolean" default="false"/>
+    <aura:attribute name="showFiles" type="Boolean" default="true" />		<!--TODO: set default to false-->
+    <aura:attribute name="fileUploaded" type="Boolean" default="false" />
+    <aura:attribute name="showRecaptcha" type="Boolean" default="true" />
+    <aura:attribute name="showSuccess" type="Boolean" default="false" />
+    <aura:attribute name="selectedProduct" type="String" default="" />
+    
+    <!-- LOGIC VARIABLES -->
+    <aura:attribute name="theCase" type="Case" default="{'sObjectType':'Case'}" />
+    <aura:attribute name="recordTypeId" type="Id" />
+    <aura:attribute name="userId" type="Id" />
+    <aura:attribute name="caseFiles" type="List" default="[]"/>
+    <aura:attribute name="errorMessages" type="List" default="[]" />
+    <aura:attribute name="caseNumber" type="String" default="" />
+	
+    <!-- INBENTA INTEGRATION -->
+   <!-- 
+    <ltng:require scripts="{!join(',',
+                           $Resource.TestInbentaSearchSDK + '/conf/inbenta-conf.js',
+                           $Resource.TestInbentaSearchSDK +
+                           '/assets/js/inbenta-core.js')}"
+                  styles="{!$Resource.TestInbentaSearchSDK +
+                          '/assets/css/inbenta-core.css'}" />
+	-->
+    
+    <!--	Spinner	-->
+    <aura:if isTrue="{!v.showSpinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large" role="alert">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    
+    <!-- ERROR MESSAGE -->
+    <aura:if isTrue="{!v.errorMessages.length>0}">
+        <div aura:id="errorMessages">
+            <ui:message title="Error" severity="error" closable="false">
+                <ul class="slds-list_dotted">
+                    <aura:iteration items="{!v.errorMessages}" var="message">
+                        <li>{!message}</li>
+                    </aura:iteration>
+                </ul>
+            </ui:message>
+            <br/>
+        </div>
+    </aura:if>
+    
+    <!-- CASE FORM/INBENTA CASE DEFLECTION -->
+    <div class="slds-grid">
+        <!-- CREATE CASE FORM BODY -->
+        <!-- <div class="webForm slds-p-bottom_large slds-p-left_medium"> -->
+        <div class="slds-size_1-of-1 slds-medium-size_3-of-6 slds-large-size_6-of-12">
+            <!--        <div class="webForm">	-->
+            <aura:if isTrue="{!v.showCase}" >
+                <div class="slds-text-heading_small slds-m-top_medium slds-m-bottom_x-small">
+                    Shoot us an email - we'll get back to you as soon as we can.
+                </div>
+                <lightning:recordEditForm aura:id="createCaseForm"
+                                          class="webForm"
+                                          objectApiName="Case"
+                                          recordTypeId="{!v.recordTypeId}">
+                    
+                    <lightning:inputField aura:id="caseName" fieldName="SuppliedName" required="true" variant="label-stacked" />
+                    <lightning:inputField aura:id="caseEmail" fieldName="SuppliedEmail" required="true" variant="label-stacked" />
+                    <lightning:inputField aura:id="casePhone" fieldName="SuppliedPhone" required="true" variant="label-stacked" />
+                    <lightning:inputField aura:id="caseProduct" fieldName="Product__c" label="Software" required="true" variant="label-stacked" onchange="{!c.ProductSelected}" />
+                    
+                    <!--Site ID/Location ID/Location Name-->
+                    <!-- Field determined by the value selected in the Product__c field -->
+                    <aura:if isTrue="{!v.selectedProduct=='MINDBODY'}" > 
+                        <lightning:inputfield aura:id="caseSiteId" name="SiteId" label = "Site ID"
+                                              fieldName="Site_ID__c" required="true" variant="label-stacked" />                  
+                    </aura:if>
+                    
+                    <aura:if isTrue="{!v.selectedProduct=='Booker'}" >
+                        <lightning:inputfield aura:id="caseLocationId" name="LocationId" label = "Location ID"
+                                              fieldName="Location_ID__c" required="true" variant="label-stacked"/>
+                    </aura:if>
+                    
+                    <aura:if isTrue="{!v.selectedProduct=='FitMetrix'}" >
+                        <lightning:inputfield aura:id="caseLocationName" name="LocationName" label = "Location Name"
+                                              fieldName="Location_name__c" required="true" variant="label-stacked" />
+                    </aura:if>
+                    
+                    <lightning:inputField aura:id="caseNeedHelpWith" fieldName="I_need_help_with__c" required="true" variant="label-stacked" />
+                    <lightning:inputField aura:id="caseSeverity" fieldName="Severity__c" required="true" variant="label-stacked" />
+                    <lightning:inputField class="inbenta-input" aura:id="caseSubject" fieldName="Subject" required="true" variant="label-stacked" /> 
+                    <lightning:inputField class ="inbenta-input" aura:id="caseDescription" fieldName="Description" required="true" variant="label-stacked" />
+
+                </lightning:recordEditForm>
+                
+                <!-- FILE UPLOAD -->
+                <!--accept=".png,.jpg,.jpeg,.pdf"-->
+                <aura:if isTrue="{!v.showFiles}">
+                    <div class="slds-col slds-size_8-of-8 slds-p-top_small">
+                        <lightning:fileUpload 
+                                              aura:id="fileUploader"
+                                              disabled="{!v.fileUploaded}"
+                                              label= "Upload File"
+                                              multiple="false"                                  
+                                              onuploadfinished="{! c.handleUploadFinished }"
+                                              name="fileUploader"
+                                              title="Upload File"
+                                              recordId="{!v.userId}" />                   
+                    </div>
+                    <aura:if isTrue="{!v.caseFiles.length>0}">
+                        <div class="slds-col slds-size_8-of-8 slds-p-top_small">
+                            <aura:iteration indexVar="key" var="col" items="{!v.caseFiles}">
+                                <lightning:pill aura:id="{!col.key}"
+                                                class="slds-m-horizontal_x-small slds-m-bottom_x-small"
+                                                name="{!col.key}" 
+                                                label="{!col.value}" 
+                                                onremove="{!c.handlePillRemoval}" /> <br/>
+                            </aura:iteration>                        
+                        </div>
+                    </aura:if>
+                    <div class="slds-text-color_weak slds-text-body_small">
+                        You may only upload one attachment with a maximum size of 10MB.
+                    </div>
+                </aura:if>
+                
+                <!-- SUBMIT BUTTON -->
+                <aura:if isTrue="{!v.showSubmitCase}">
+<!--                    <div class="slds-col slds-size_8-of-8 slds-p-top_small"> -->
+                        <lightning:button aura:id="theCaseCreateButton" class="slds-align_absolute-center uiButton" variant="brand" label="Submit" onclick="{!c.submitCreateCase}" />
+<!--                    </div> -->
+                </aura:if>
+                
+                <!-- RECAPTCHA COMPONENT -->
+                <aura:if isTrue="{!v.showRecaptcha}">
+                	<div class="slds-col slds-size_8-of-8 slds-p-top_small">
+                        <!-- EOS FULL -->
+                    	<!-- <iframe src="https://eos1-mindbody.cs27.force.com/customerservice/apex/communitycaptcha" height="600px" width="600px" style="border:0px;" /> -->
+                        <!-- PRODUCTION -->
+                        <!-- <iframe src="https://mindbodysupport.force.com/customerservice/apex/communitycaptcha" height="600px" width="600px" style="border:0px;" /> -->
+                        <!-- EOS DEV -->
+                        <iframe src="https://eosdev-mindbodysupport.cs124.force.com/customerservice/apex/communitycaptcha" height="600px" width="600px" style="border:0px;" />
+                	</div>
+               </aura:if> 
+                
+            </aura:if> 
+            <!--        </div>	-->
+            
+            <!-- SUCCESS MESSAGE -->
+            <aura:if isTrue="{!v.showSuccess}">
+                <div class="slds-col slds-size_8-of-8 slds-p-top_small">
+                    <h2 class="slds-text-heading_small">Support case created successfully! </h2>
+               			<!-- Your case number is {!v.caseNumber} -->
+                </div>
+            </aura:if>
+            
+        </div>
+        <!-- INBENTA CASE DEFLECTION -->
+        <div class="inbentaRelatedArticles slds-size_1-of-1 slds-medium-size_3-of-6 slds-large-size_6-of-12" id="inbentaRelatedArticles">
+            <h3>Related Articles</h3>
+        </div>
+    </div>
+</aura:component>

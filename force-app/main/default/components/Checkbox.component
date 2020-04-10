@@ -1,0 +1,5 @@
+<apex:component selfClosing="true">
+  <apex:attribute name="value" type="boolean" description="Value to display" required="true"/>
+  <apex:image value="/img/checkbox_checked.gif" rendered="{!value}"/>
+  <apex:image value="/img/checkbox_unchecked.gif" rendered="{!NOT(value)}"/>
+</apex:component>

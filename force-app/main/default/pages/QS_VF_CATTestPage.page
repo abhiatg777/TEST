@@ -1,0 +1,45 @@
+<apex:page controller="QS_VF_CATTestPageController" docType="html-5.0">
+    <apex:stylesheet value="{!$Resource.jqueryui_zip}/css/smoothness/jquery-ui-1.8.9.custom.css" />   
+    <apex:includeScript value="{!$Resource.jqueryui_zip}/js/jquery-1.4.4.min.js"/>
+    <apex:includeScript value="{!$Resource.jqueryui_zip}/js/jquery-ui-1.8.8.custom.min.js"/>
+    
+     <apex:form id="theForm">
+        <apex:pageBlock mode="mainDetail" title="Specify Customer Asset Detail Nam" id="block">
+            Provide a date to see what Asset will look like on that day:
+            <apex:input id="cadStartDate" rendered="true" type="date" value="{!cadDate}"/><br/><br/>
+            <apex:commandButton value="Retrieve Asset Detail Records" action="{!getAssetAndCadDetails}"  id="getDetailsButton" rendered="true" title="Submit"/>
+         <apex:commandButton value="Update CAD Date" action="{!UpdateCADDate}"  id="updateCadDate" rendered="true" title="Submit"/>
+         
+         <apex:pageblocktable value="{!currentAsset}" var="currentAssetVariable">
+             <apex:column value="{!currentAssetVariable.name}"/>
+             <apex:column value="{!currentAssetVariable.QS_Product__r.Name}"/>
+             <apex:column value="{!currentAssetVariable.QS_Account__r.Name}"/>
+             <apex:column value="{!currentAssetVariable.QS_Asset_Status__c}"/>
+             <apex:column value="{!currentAssetVariable.QS_Quantity__c}"/>
+             <apex:column value="{!currentAssetVariable.QS_Annual_Recurring_Revenue__c}"/>
+             <apex:column value="{!currentAssetVariable.QS_Start_Date__c}"/>
+             <apex:column value="{!currentAssetVariable.QS_End_Date__c}"/>
+             <apex:column value="{!currentAssetVariable.QS_Effective_Decommision_Date__c}"/>
+             </apex:pageblocktable>
+            <br/>
+            <br/>
+            
+         <apex:pageblocktable value="{!cadList}" var="cad">
+                <apex:column value="{!cad.Name}"></apex:column>
+                <apex:column value="{!cad.QS_Asset_Status__c}"></apex:column>
+                <apex:column value="{!cad.QS_Start_Date__c}"></apex:column>
+                <apex:column value="{!cad.QS_End_Date__c}"></apex:column>
+                <apex:column value="{!cad.QS_Customer_Asset__r.Name}"></apex:column>
+                <apex:column value="{!cad.QS_Annual_Recurring_Revenue__c}"></apex:column>
+                <apex:column value="{!cad.QS_CA_Quantity__c}"></apex:column>
+                <apex:column value="{!cad.QS_Currently_Active__c}"></apex:column>
+                <apex:column value="{!cad.QS_Booking_Date__c}"></apex:column>
+                
+               
+            </apex:pageblocktable>
+            
+         </apex:pageBlock>
+
+         
+    </apex:form>
+</apex:page>

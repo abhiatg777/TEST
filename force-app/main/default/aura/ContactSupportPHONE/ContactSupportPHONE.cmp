@@ -1,0 +1,231 @@
+<aura:component implements="force:appHostable,forceCommunity:availableForAllPageTypes" 
+                controller="CommunityController" access="public" >
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <!-- COMPONENT DISPLAY VARIABLES -->
+    <aura:attribute name="showSpinner" type="Boolean" default="false" />
+    <aura:attribute name="businessOpen" type="Boolean" default="false" />
+    <aura:attribute name="showForm" type="Boolean" default="true" />
+    <aura:attribute name="showCallButton" type="Boolean" default="true" />	<!-- TODO: set default to false -->
+    <aura:attribute name="showRecaptcha" type="Boolean" default="false" />
+    <aura:attribute name="showSuccess" type="Boolean" default="false" />
+    <aura:attribute name="selectedProduct" type="String" default="" />
+    
+    <!-- LOGIC VARIABLES -->
+    <aura:attribute name="theCase" type="Case" default="{'sObjectType' : 'Case'}" />
+    <aura:attribute name="recordTypeId" type="Id" />
+    <aura:attribute name="userId" type="Id" />
+    <aura:attribute name="errorMessages" type="List" default="[]" />
+    <aura:attribute name="supportNumbers" type="List" default="[]" />
+    <aura:attribute name="isoCodes" type="List" default="AD,AE,AF,AG,AI,AL,AM,AO,AQ,AR,AT,AU,AW,AX,AZ,BA,BB,BD,BE,BF,BG,BH,BI,BJ,BL,BM,BN,BO,BQ,BR,BS,BT,BV,BW,BY,BZ,CA,CC,CD,CF,CG,CH,CI,CK,CL,CM,CN,CO,CR,CU,CV,CW,CX,CY,CZ,DE,DJ,DK,DM,DO,DZ,EC,EE,EG,EH,ER,ES,ET,FI,FJ,FK,FO,FR,GA,GB,GD,GE,GF,GG,GH,GI,GL,GM,GN,GP,GQ,GR,GS,GT,GW,GY,HM,HN,HR,HT,HU,ID,IE,IL,IM,IN,IO,IQ,IR,IS,IT,JE,JM,JO,JP,KE,KG,KH,KI,KM,KN,KP,KR,KW,KY,KZ,LA,LB,LC,LI,LK,LR,LS,LT,LU,LV,LY,MA,MC,MD,ME,MF,MG,MK,ML,MM,MN,MO,MQ,MR,MS,MT,MU,MV,MW,MX,MY,MZ,NA,NC,NE,NF,NG,NI,NL,NO,NP,NR,NU,NZ,OM,PA,PE,PF,PG,PH,PK,PL,PM,PN,PS,PT,PY,QA,RE,RO,RS,RU,RW,SA,SB,SC,SD,SE,SG,SH,SI,SJ,SK,SL,SM,SN,SO,SR,SS,ST,SV,SX,SY,SZ,TC,TD,TF,TG,TH,TJ,TK,TL,TM,TN,TO,TR,TT,TV,TW,TZ,UA,UG,US,UY,UZ,VA,VC,VE,VG,VN,VU,WF,WS,YE,YT,ZA,ZM,ZW" />
+    
+    <!-- SPINNER -->
+    <aura:if isTrue="{!v.showSpinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large" role="alert">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    
+    <!-- ERROR MESSAGE -->
+    <aura:if isTrue="{!v.errorMessages.length>0}">
+        <div aura:id="errorMessages">
+            <ui:message title="Error" severity="error" closable="false">
+                <ul class="slds-list_dotted">
+                    <aura:iteration items="{!v.errorMessages}" var="message">
+                        <li>{!message}</li>
+                    </aura:iteration>
+                </ul>
+            </ui:message>
+            <br/>
+        </div>
+    </aura:if>
+    
+    <!-- CONTACT FORM/INBENTA CASE DEFLECTION -->
+    <div class="slds-grid" >
+        
+        <!-- CONTACT SUPPORT FORM -->
+        <div class="slds-size_1-of-1 slds-medium-size_3-of-6 slds-large-size_6-of-12">
+            
+            <!-- DISPLAYS UNTIL FORM IS SUBMITTED -->
+            <aura:if isTrue="{!v.showForm}" >
+                <lightning:recordEditForm aura:id="phoneSupportForm"
+                                          class="webForm"
+                                          objectApiName="Case"
+                                          recordTypeId="{!v.recordTypeId}" >
+                    
+                    <lightning:inputField aura:id="caseProduct" fieldName="Product__c" required="true" 
+                                          variant="label-stacked" onchange="{!c.ProductSelected}" />
+                    
+                    <!-- DUIRNG BUSINESS HOURS, PRODUCT SELECTED -->
+                    <aura:if isTrue="{!v.businessOpen}" >
+                        <aura:if isTrue="{!!empty(v.selectedProduct)}" >
+                            <div class="slds-text-heading_small slds-m-top_medium slds-m-bottom_x-small">
+                                Want us to call you?
+                            </div>
+                            <lightning:inputField aura:id="caseName" fieldName="SuppliedName" required="true" variant="label-stacked" />
+                            
+                            <!-- PRODUCT = MINDBODY, DURING BUSINESS HOURS -->
+                            <aura:if isTrue="{!v.selectedProduct=='MINDBODY'}" >
+                                <lightning:inputField aura:id="caseSiteId" fieldName="Site_ID__c" 
+                                                      required="true" variant="label-stacked" />
+                            </aura:if>
+                            
+                            <!-- PRODUCT = BOOKER, DURING BUSINESS HOURS -->
+                            <aura:if isTrue="{!v.selectedProduct=='Booker'}" >
+                                <lightning:inputField aura:id="caseLocationId" fieldName="Location_ID__c" 
+                                                      required="true" variant="label-stacked" />
+                            </aura:if>
+                            
+                            <!-- PRODUCT = FITMETRIX, DURING BUSINESS HOURS -->
+                            <aura:if isTrue="{!v.selectedProduct=='FitMetrix'}" >
+                                <lightning:inputField aura:id="caseLocationName" fieldName="Location_name__c" 
+                                                      required="true" variant="label-stacked" />
+                            </aura:if>
+                            
+                            <lightning:inputField aura:id="caseNeedHelpWith" fieldName="I_need_help_with__c" required="true" variant="label-stacked" />
+                            <lightning:inputField aura:id="caseSubject" class="caseSubject" fieldName="Subject" required="true" variant="label-stacked" />
+                            <label for="listIsoCode" required="true">Callback Number</label>
+                            <div class="slds-grid slds-p-bottom_medium" >
+                                <lightning:select aura:id="listIsoCode" variant="label-hidden">
+                                	<aura:iteration items="{!v.isoCodes}" var="val" >
+                                    	<option value="{!val}">{!val}</option>
+                                    </aura:iteration>
+                                </lightning:select>
+                            	<lightning:inputField class="slds-p-left_xx-small slds-p-top_x-small slds-m-top_small" aura:id="casePhone" fieldName="SuppliedPhone" required="true" variant="label-hidden" />
+                            </div>
+                            
+                            <!-- CALL ME BUTTON -->
+                            <aura:if isTrue="{!v.showCallButton}">
+                                <lightning:button aura:id="callMeButton" class="slds-align_absolute-center uiButton" variant="brand" label="Call Me" />
+                            </aura:if>
+                            
+                            <!-- DURING BUSINESS HOURS, PRODUCT = MINDBODY -->
+                            <aura:if isTrue="{!v.selectedProduct=='MINDBODY'}" >
+                                <div class="slds-m-top_medium slds-m-bottom_none slds-p-bottom_none slds-grid">
+                                    <div class="slds-size_1-of-2">
+                                        Rather call us? Select a country to get the right number.
+                                        <lightning:select aura:id="listSupportNumbersOpen" variant="label-hidden" onchange="{!c.DisplaySupportNumber}" >
+                                            <option value=""></option>
+                                            <aura:iteration items="{!v.supportNumbers}" var="val" >
+                                                <option value="{!val.Support_Number__c}">{!val.MasterLabel}</option>
+                                            </aura:iteration>
+                                        </lightning:select>
+                                    </div>
+                                    <p class="slds-text-heading_medium slds-p-left_large slds-p-top_small slds-size_1-of-2" >
+                                        <br/><br/>
+                                        <ui:outputPhone aura:id="displayPhoneOpen" value="" />
+                                    </p>
+                                </div>
+                            </aura:if>
+                            
+                            <!-- DURING BUSINESS HOURS, PRODUCT = BOOKER -->
+                            <aura:if isTrue="{!v.selectedProduct=='Booker'}" >
+                                <div class="slds-text-body_regular slds-m-top_medium slds-m-bottom_x-small" style="color:rgb(105, 105, 105),font-size:.75rem">
+                                    Rather call us?  866-966-9798
+                                </div>
+                            </aura:if>
+                            
+                            <!-- DURING BUSINESS HOURS, PRODUCT = FIRMETRIX -->
+                            <aura:if isTrue="{!v.selectedProduct=='FitMetrix'}" >
+                                <div class="slds-text-body_regular slds-m-top_medium slds-m-bottom_x-small">
+                                    Rather call us?  1-800-998-3776
+                                </div>
+                            </aura:if>
+                        </aura:if>
+                        
+                        <!-- Outside Business Hours, Product Selected -->
+                        <aura:set attribute="else" >
+                            
+                            <!-- OUTSIDE BUSINESS HOURS, PRODUCT = MINDBODY -->
+                            <aura:if isTrue="{!v.selectedProduct=='MINDBODY' || v.selectedProduct=='TESTING ONLY - MINDBODY'}" >
+                                
+                                <h1 class="slds-text-heading_medium">Support Hours</h1>
+                                <div class="slds-text-body_regular slds-m-top_medium slds-m-bottom_x-small">
+                                    <p class="slds-text-heading_small">Open 24 hours</p>
+                                    <p>Holidays and company events may affect these hours.</p>
+                                    <br/>
+                                </div>
+                                <div class="slds-grid">
+                                    <div class="slds-size_1-of-2">
+                                        Select a country to get the right number.
+                                        <lightning:select aura:id="listSupportNumbersClosed" variant="label-hidden" onchange="{!c.DisplaySupportNumber}" >
+                                            <option value=""></option>
+                                            <aura:iteration items="{!v.supportNumbers}" var="val" >
+                                                <option value="{!val.Support_Number__c}">{!val.MasterLabel}</option>
+                                            </aura:iteration>
+                                        </lightning:select>
+                                    </div>
+                                    <p class="slds-text-heading_medium slds-p-left_large slds-p-top_small slds-size_1-of-2" >
+                                        <br/>
+                                        <ui:outputPhone aura:id="displayPhoneClosed" value="" />
+                                    </p>
+                                </div>
+                            </aura:if>
+                            
+                            <!-- OUTSIDE BUSINESS HOURS, PRODUCT = BOOKER -->
+                            <aura:if isTrue="{!v.selectedProduct=='Booker' || v.selectedProduct=='TESTING ONLY - BOOKER'}" >
+                                <h2 class="slds-text-heading_medium">Support Hours</h2>
+                                <div class="slds-text-body_regular slds-m-top_medium slds-m-bottom_x-small" style="color:rgb(105, 105, 105),font-size:.75rem">
+                                    <p>Monday - Friday: 9:00 am - 9:00 pm ET</p>
+                                    <p>Saturday - Sunday: 10:00 am - 7:00 pm ET</p>
+                                    <p>Holidays and company events may affect these hours.</p>
+                                    <br/>
+                                    <p class="slds-text-heading_small">1-866-966-9885</p>
+                                </div>
+                            </aura:if>
+                            
+                            <!-- OUTSIDE BUSINESS HOURS, PRODUCT = FITMETRIX -->
+                            <aura:if isTrue="{!v.selectedProduct=='FitMetrix' || v.selectedProduct=='TESTING ONLY - FITMETRIX'}" >
+                                <h2 class="slds-text-heading_medium">Support Hours</h2>
+                                <div class="slds-text-body_regular slds-m-top_medium slds-m-bottom_x-small">
+                                    <p>Monday - Friday: Open 24 Hours</p>
+                                    <p>Saturday: 4:00 am - 11:00 pm PT</p>
+                                    <p>Sunday: 4:00 am - 12:00 am PT</p>
+                                    <p>Holidays and company events may affect these hours.</p>
+                                    <br/>
+                                    <p class="slds-text-heading_small">1-800-998-3776</p>
+                                </div>
+                                
+                            </aura:if>
+                        </aura:set>
+                    </aura:if>
+                </lightning:recordEditForm>
+                
+                
+                
+                <!-- RECAPTCHA COMPONENT -->
+                <aura:if isTrue="{!v.showRecaptcha}">
+                    <div class="slds-col slds-size_8-of-8 slds-p-top_small">
+                        <!-- PRODUCTION -->
+                        <!-- <iframe src="https://mindbodysupport.force.com/customerservice/apex/communitycaptcha" height="600px" width="600px" style="border:0px" /> -->
+                        <!-- FULL SANDBOX -->
+                        <!-- <iframe src="https://eos1-mindbody.cs27.force.com/customerservice/apex/communitycaptcha" height="600px" width="600px" style="border:0px;" /> -->
+                        <!-- EOS DEV -->
+                        <iframe src="https://eosdev-mindbodysupport.cs124.force.com/customerservice/apex/communitycaptcha" height="600px" width="600px" style="border:0px;" />
+                    </div>
+                </aura:if> 
+                
+            </aura:if>
+            
+            <!-- SUCCESS MESSAGE -->
+            <aura:if isTrue="{!v.showSuccess}">
+                <div class="slds-col slds-size_8-of-8 slds-p-top_small">
+                    <h2 class="slds-text-heading_small">Thanks! We'll contact you shortly.</h2>
+                    <!-- Your case number is {!v.caseNumber} -->
+                </div>
+            </aura:if>
+            
+        </div>
+        
+        <!-- INBENTA CASE DEFLECTION -->
+        <div class="slds-size_1-of-1 slds-medium-size_3-of-6 slds-large-size_6-of-12 inbentaRelatedArticles" id="inbentaRelatedArticles" >
+            <h3>Related Articles</h3>
+        </div>
+    </div>
+    
+</aura:component>

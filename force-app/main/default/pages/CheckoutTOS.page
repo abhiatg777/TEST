@@ -1,0 +1,23 @@
+<apex:page >
+    <table style="width:1000">
+        <tr>
+            <td style="width:550px;">
+                <apex:image url="{!$Resource.mblogo}" width="250" />
+            </td>
+            <td>
+                <apex:image url="{!URLFOR($Resource.CheckoutSteps,"/step2.png")}" width="450" />
+            </td>
+        </tr>
+    </table>
+
+
+    <div style="width:98%;horizontal-align:center;text-align: center;">
+        <br /><br />
+
+        <apex:image url="{!URLFOR($Resource.CheckoutSteps,"/order2.png")}" width="1000px;" />
+        <br /><br />
+        <input type="submit" value="Back" onclick="window.location='checkoutrevieworder?id=006220000047S3G';" />
+        &nbsp;
+        <input type="submit" value="Next" onclick="window.location='checkoutpayment?id=006220000047S3G';" />
+    </div >
+</apex:page>

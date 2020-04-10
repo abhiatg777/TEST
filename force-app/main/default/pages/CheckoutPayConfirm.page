@@ -1,0 +1,22 @@
+<apex:page >
+    <table style="width:1000">
+        <tr>
+            <td style="width:550px;">
+                <apex:image url="{!$Resource.mblogo}" width="250" />
+            </td>
+            <td>
+                <apex:image url="{!URLFOR($Resource.CheckoutSteps,"/step4.png")}" width="450" />
+            </td>
+        </tr>
+    </table>
+
+    <br /><br />
+    <div style="width:98%;horizontal-align:center;text-align: center;">
+        <br /><br />
+        &nbsp;&nbsp;<b>Congratulations your checkout is complete and the Order has been submitted for payment! </b>
+        <br /><br /><br /><br />
+
+        <input type="submit" value="Home" onclick="window.location='checkouthome?id=006220000047S3G';" />
+    </div >
+
+</apex:page>

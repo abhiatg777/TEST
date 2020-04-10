@@ -1,0 +1,35 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false">
+
+    <table style="width:1000">
+        <tr>
+            <td style="width:550px;">
+                <apex:image url="{!$Resource.mblogo}" width="250" />
+            </td>
+            <td>
+                <apex:image url="{!URLFOR($Resource.CheckoutSteps,"/step0.png")}" width="450" />
+            </td>
+        </tr>
+    </table>
+
+    <apex:composition template="CheckoutTemplate">
+        <apex:define name="header">
+            <!--<c:OOPHeader stepFile="{!oop.currentStep.navImage}" />-->
+
+        </apex:define>
+
+        <apex:define name="body">
+            <apex:form id="chkForm">
+
+            </apex:form>
+        </apex:define>
+    </apex:composition>
+
+    <div style="width:98%;horizontal-align:center;text-align: center;">
+        <br /><br />
+        &nbsp;&nbsp;<b>Welcome to the Mindbody checkout site XYZ Corp.<br /> Click Next to begin completing your order and submit payment. </b>
+        <br /><br /><br /><br />
+        <input type="submit" value="Next" onclick="window.location='checkoutrevieworder?id=006220000047S3G';" />
+    </div >
+
+
+</apex:page>
